@@ -5,16 +5,24 @@ services:
     image: "nginx:1.21.3"
     networks:
       - coolify-net
-    ports:
-      - "${HTTP_BIND}:${HTTP_PORT}:80"
     volumes:
       - ./.huly.nginx:/etc/nginx/conf.d/default.conf
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.nginx.rule=Host(`huly.biocentra.eu`) && PathPrefix(`/nginx`)
+      - traefik.http.routers.nginx.entrypoints=https
+      - traefik.http.routers.nginx.tls=true
+      - traefik.http.routers.nginx.tls.certresolver=letsencrypt
+      - traefik.http.services.nginx.loadbalancer.server.port=80
+      - traefik.http.middlewares.nginx-stripprefix.stripprefix.prefixes=/nginx
+      - traefik.http.routers.nginx.middlewares=nginx-stripprefix
+
     
   aibot:
     image: hardcoreeng/ai-bot:v0.6.501
-    ports:
-      - 4010:4010
+    networks:
+      - coolify-net
     environment:
       - STORAGE_CONFIG=minio|minio?accessKey=minioadmin&secretKey=minioadmin
       - SERVER_SECRET=secret
@@ -27,9 +35,18 @@ services:
       - PASSWORD=${DB_PASSWORD}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_BASE_URL=https://api.openai.com
-      # optional if you use love service
       - LOVE_ENDPOINT=http://love:8096
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.aibot.rule=Host(`huly.biocentra.eu`) && PathPrefix(`/aibot`)
+      - traefik.http.routers.aibot.entrypoints=https
+      - traefik.http.routers.aibot.tls=true
+      - traefik.http.routers.aibot.tls.certresolver=letsencrypt
+      - traefik.http.services.aibot.loadbalancer.server.port=4010
+      - traefik.http.middlewares.aibot-stripprefix.stripprefix.prefixes=/aibot
+      - traefik.http.routers.aibot.middlewares=aibot-stripprefix
+
 
   mongodb:
     image: "mongo:7-jammy"
@@ -50,6 +67,15 @@ services:
     volumes:
       - files:/data
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.minio.rule=Host(`huly.biocentra.eu`) && PathPrefix(`/minio`)
+      - traefik.http.routers.minio.entrypoints=https
+      - traefik.http.routers.minio.tls=true
+      - traefik.http.routers.minio.tls.certresolver=letsencrypt
+      - traefik.http.services.minio.loadbalancer.server.port=9001
+      - traefik.http.middlewares.minio-stripprefix.stripprefix.prefixes=/minio
+      - traefik.http.routers.minio.middlewares=minio-stripprefix
 
   elastic:
     image: "elasticsearch:7.14.2"
@@ -72,6 +98,16 @@ services:
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.elastic.rule=Host(`huly.biocentra.eu`) && PathPrefix(`/elastic`)
+      - traefik.http.routers.elastic.entrypoints=https
+      - traefik.http.routers.elastic.tls=true
+      - traefik.http.routers.elastic.tls.certresolver=letsencrypt
+      - traefik.http.services.elastic.loadbalancer.server.port=9200
+      - traefik.http.middlewares.elastic-stripprefix.stripprefix.prefixes=/elastic
+      - traefik.http.routers.elastic.middlewares=elastic-stripprefix
+
 
   rekoni:
     image: hardcoreeng/rekoni-service:${HULY_VERSION}
@@ -84,6 +120,16 @@ services:
         limits:
           memory: 500M
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.rekoni.rule=Host(`huly.biocentra.eu`) && PathPrefix(`/rekoni`)
+      - traefik.http.routers.rekoni.entrypoints=https
+      - traefik.http.routers.rekoni.tls=true
+      - traefik.http.routers.rekoni.tls.certresolver=letsencrypt
+      - traefik.http.services.rekoni.loadbalancer.server.port=4004
+      - traefik.http.middlewares.rekoni-stripprefix.stripprefix.prefixes=/rekoni
+      - traefik.http.routers.rekoni.middlewares=rekoni-stripprefix
+
 
   transactor:
     image: hardcoreeng/transactor:${HULY_VERSION}
