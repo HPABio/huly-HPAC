@@ -27,6 +27,15 @@ services:
     networks:
       - coolify-net
     command: server /data --address ":9000" --console-address ":9001"
+    labels:
+  - traefik.enable=true
+  - traefik.http.routers.minio.rule=Host(`huly.biocentra.eu`) && PathPrefix(`/minio`)
+  - traefik.http.routers.minio.entrypoints=https
+  - traefik.http.routers.minio.tls=true
+  - traefik.http.routers.minio.tls.certresolver=letsencrypt
+  - traefik.http.services.minio.loadbalancer.server.port=9001
+  - traefik.http.middlewares.minio-stripprefix.stripprefix.prefixes=/minio
+  - traefik.http.routers.minio.middlewares=minio-stripprefix
     volumes:
       - files:/data
     restart: unless-stopped
