@@ -10,6 +10,26 @@ services:
     volumes:
       - ./.huly.nginx:/etc/nginx/conf.d/default.conf
     restart: unless-stopped
+    
+  aibot:
+    image: hardcoreeng/ai-bot:v0.6.501
+    ports:
+      - 4010:4010
+    environment:
+      - STORAGE_CONFIG=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+      - SERVER_SECRET=secret
+      - ACCOUNTS_URL=http://account:3000
+      - DB_URL=mongodb://mongodb:27017
+      - MONGO_URL=mongodb://mongodb:27017
+      - STATS_URL=http://stats:4900
+      - FIRST_NAME=Bot
+      - LAST_NAME=Huly AI
+      - PASSWORD=<PASSWORD>
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=https://api.openai.com
+      # optional if you use love service
+      - LOVE_ENDPOINT=http://love:8096
+    restart: unless-stopped
 
   mongodb:
     image: "mongo:7-jammy"
