@@ -24,7 +24,7 @@ services:
       - STATS_URL=http://stats:4900
       - FIRST_NAME=Bot
       - LAST_NAME=Huly AI
-      - PASSWORD=<PASSWORD>
+      - PASSWORD=${DB_PASSWORD}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_BASE_URL=https://api.openai.com
       # optional if you use love service
