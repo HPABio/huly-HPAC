@@ -154,6 +154,13 @@ services:
       - LAST_NAME_FIRST=${LAST_NAME_FIRST:-true}
       - DESKTOP_UPDATES_CHANNEL=selfhost
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - 'traefik.http.routers.huly.rule=Host("huly.biocentra.eu")'
+      - traefik.http.routers.huly.entrypoints=https
+      - traefik.http.routers.huly.tls=true
+      - traefik.http.routers.huly.tls.certresolver=letsencrypt
+      - traefik.http.services.huly.loadbalancer.server.port=3000
 
   fulltext:
     image: hardcoreeng/fulltext:${HULY_VERSION}
